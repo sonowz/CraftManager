@@ -5,15 +5,15 @@ Manage your craft saves with tags, and search with keyword.
 
 ### Known Issues
 
-- No deletion
+- Incompability with translation mods that changes window text
 
 
 
 ### TODO :
 
-- Finish delete function
 - Mod compatibility
 - Add search box
+- Intercept minor windows
 
 ### Future Plans
 
