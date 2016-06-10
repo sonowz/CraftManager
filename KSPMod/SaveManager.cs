@@ -27,7 +27,7 @@ namespace KSPMod
             {
                 print(e.StackTrace);
             }
-            //UI = gameObject.AddComponent<SMUI>();
+            UILogic.SaveManagerClass = this;
             EditorLogic.fetch.loadBtn.onClick.AddListener(onLoadBtn);
             EditorLogic.fetch.saveBtn.onClick.AddListener(onSaveBtn);
 
@@ -39,10 +39,10 @@ namespace KSPMod
             i.init(shipData);*/
         }
 
-        private void FetchShipFiles()
+        public void FetchShipFiles()
         {
             shipData = new ShipData();
-            SMLogic.shipData = shipData;
+            UILogic.shipData = shipData;
 
             string FolderPath = KSPUtil.ApplicationRootPath + "saves/" + HighLogic.SaveFolder + "/Ships/";
             FileInfo[] fileInfo = new DirectoryInfo(FolderPath).GetFiles("*.craft", SearchOption.AllDirectories);
@@ -50,7 +50,7 @@ namespace KSPMod
             foreach (FileInfo f in fileInfo)
                 FetchShipFile(f);
             shipData.selectedTag.Add("_All", "_All");
-            if(EditorLogic.fetch.ship.shipFacility == EditorFacility.SPH)
+            if (EditorLogic.fetch.ship.shipFacility == EditorFacility.SPH)
                 shipData.selectedTag.Add("_SPH", "_SPH");
             else
                 shipData.selectedTag.Add("_VAB", "_VAB");
@@ -112,15 +112,33 @@ namespace KSPMod
             return thumbnail;
         }
 
+        private MessageBox[] m;
         public void Update()
         {
-            SMLogic.originalBrowser = (KSP.UI.Screens.CraftBrowserDialog)GameObject.FindObjectOfType(typeof(KSP.UI.Screens.CraftBrowserDialog));
-            if(SMLogic.originalBrowser != null)
-                if(SMLogic.enableOriginal == true)
-                    SMLogic.originalBrowser.gameObject.transform.localScale = Vector3.one;
+            // Since UILogic is static class, there's no update() in it
+            if(UILogic.originalBrowser == null)
+                UILogic.originalBrowser = (KSP.UI.Screens.CraftBrowserDialog)GameObject.FindObjectOfType(typeof(KSP.UI.Screens.CraftBrowserDialog));
+            if (UILogic.originalBrowser != null)
+            {
+                if (UI == null)
+                {
+                    Destroy(UILogic.originalBrowser);
+                    UILogic.originalBrowser = null;
+                }
                 else
-                    SMLogic.originalBrowser.gameObject.transform.localScale = Vector3.zero;
+                {
+                    if (UILogic.enableOriginal == true)
+                        UILogic.originalBrowser.gameObject.transform.localScale = Vector3.one;
+                    else
+                        UILogic.originalBrowser.gameObject.transform.localScale = Vector3.zero;
+                }
+            }
+            foreach (Text t in GameObject.FindObjectsOfType<Text>())
+                if (t.text == "Load Craft")
+                    print("found");
+                
         }
+
 
         public void onLoadBtn()
         {
@@ -140,6 +158,11 @@ namespace KSPMod
             }
             else
                 FetchShipFiles();
+        }
+
+        public void onUIDestroy()
+        {
+            UI = null;
         }
 
         //EditorLogic.fetch.loadBtn

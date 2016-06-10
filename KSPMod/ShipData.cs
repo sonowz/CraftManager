@@ -49,13 +49,12 @@ namespace KSPMod
             return null;
         }
 
-
         /// <summary>
         /// return key is ship.name + ship.type
         /// </summary>
         public IEnumerable<KeyValuePair<string, Ship>> query()
         {
-            if (selectedTag.Count == 0)
+            if (selectedTag.Count == 0 || data.Count == 0)
                 return null;
             IEnumerable<KeyValuePair<string, Ship>> ret = data[selectedTag.Keys[0]];
             foreach (string tag in selectedTag.Keys)

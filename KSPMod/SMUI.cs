@@ -37,19 +37,22 @@ namespace KSPMod
 
         public void OnGUI()
         {
-            if (SMLogic.enableOriginal == false)
+            if (UILogic.enableOriginal == false)
             {
                 GUI.Window(0, new Rect(Screen.width / 2.0f - 300, Screen.height / 2.0f - 250, 120, 500), TagWindow, "Select Tag", g_window);
                 GUI.Window(1, new Rect(Screen.width / 2.0f - 170, Screen.height / 2.0f - 250, 400, 500), CraftWindow, "Select Craft", g_window);
-                if(SMLogic.selectedShip != null)
+                if(UILogic.selectedShip != null)
                     GUI.Window(2, new Rect(Screen.width / 2.0f + 240, Screen.height / 2.0f - 250, 200, 240), PreviewWindow, "Preview", g_window);
             }
             else
             {
-                if (SMLogic.originalBrowser == null)
+                if (UILogic.originalBrowser == null)
+                {
+                    UILogic.ReloadShipData();   // Case where ship deletion cannot be detected, so reload
                     destroy();
+                }
                 else if (GUI.Button(new Rect(Screen.width / 2.0f + 150, Screen.height / 2.0f - 240, 20, 20), "O", g_button))
-                    SMLogic.enableOriginal = false;
+                    UILogic.enableOriginal = false;
             }
         }
 
@@ -58,7 +61,7 @@ namespace KSPMod
         { 
             const int ITEMHEIGHT = 30;
             int i = 0;
-            var list = SMLogic.UI_Tag_getList();
+            var list = UILogic.Tag_getList();
             tagScrollPosition = GUI.BeginScrollView(new Rect(5, 40, 110, 450), tagScrollPosition, new Rect(5, 0, 90, Mathf.Max(ITEMHEIGHT * list.Count, 450)), false, true);
             foreach (UI_TagWindow item in list)
             {
@@ -75,7 +78,7 @@ namespace KSPMod
         {
             const int ITEMHEIGHT = 60;
             int i = 0;
-            var list = SMLogic.UI_Craft_getList();
+            var list = UILogic.Craft_getList();
             craftScrollPosition = GUI.BeginScrollView(new Rect(5, 40, 390, 400), craftScrollPosition, new Rect(5, 0, 370, Mathf.Max(ITEMHEIGHT * list.Count, 400)), false, true);
             foreach (UI_CraftWindow item in list)
             {
@@ -89,25 +92,28 @@ namespace KSPMod
 
             if (GUI.Button(new Rect(320, 460, 70, 30), "<color=#CCFF00>Load</color>", g_button))
             {
-                if(SMLogic.LoadSelectedShip(CraftBrowser.LoadType.Normal))
+                if(UILogic.LoadSelectedShip(CraftBrowser.LoadType.Normal))
                     destroy();
             }
 
 
             if (GUI.Button(new Rect(240, 460, 70, 30), "<color=#F79303>Merge</color>", g_button))
             {
-                if(SMLogic.LoadSelectedShip(CraftBrowser.LoadType.Merge))
+                if(UILogic.LoadSelectedShip(CraftBrowser.LoadType.Merge))
                     destroy();
             }
 
             if (GUI.Button(new Rect(10, 460, 70, 30), "<color=#FF0000>Delete</color>", g_button))
-                deleteConfirm = !deleteConfirm;
+                if (UILogic.selectedShip == null)
+                    deleteConfirm = false;
+                else
+                    deleteConfirm = !deleteConfirm;
 
             if (deleteConfirm)
             {
                 GUI.Label(new Rect(90, 460, 120, 30), "Are you sure?");
                 if (GUI.Button(new Rect(180, 460, 30, 30), "<color=#FF0000>Y</color>", g_button))
-                    SMLogic.DeleteSelectedShip();
+                    UILogic.DeleteSelectedShip();
             }
             else
             {
@@ -116,19 +122,19 @@ namespace KSPMod
             }
 
             if (GUI.Button(new Rect(370, 10, 20, 20), "O", g_button))
-                SMLogic.enableOriginal = true;
+                UILogic.enableOriginal = true;
         }
 
         public void PreviewWindow(int id)
         {
-            if(SMLogic.selectedShip.thumbnail.width != 0)
-                GUI.Box(new Rect(10, 50, 180, 180), SMLogic.selectedShip.thumbnail, g_box);
+            if(UILogic.selectedShip.thumbnail.width != 0)
+                GUI.Box(new Rect(10, 50, 180, 180), UILogic.selectedShip.thumbnail, g_box);
         }
 
         private void destroy()
         {
-            SMLogic.originalBrowser.OnBrowseCancelled();
-            SMLogic.UI_onDestroy();
+            UILogic.originalBrowser.OnBrowseCancelled();
+            UILogic.onDestroy();
             Destroy(this);
         }
        

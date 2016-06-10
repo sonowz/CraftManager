@@ -101,7 +101,7 @@
     <Compile Include="CraftBrowserDialogHandler.cs" />
     <Compile Include="SaveManager.cs" />
     <Compile Include="ShipData.cs" />
-    <Compile Include="SMLogic.cs" />
+    <Compile Include="UILogic.cs" />
     <Compile Include="SMUI.cs" />
     <None Include="WidgetOverride.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
