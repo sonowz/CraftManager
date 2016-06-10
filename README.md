@@ -13,7 +13,7 @@ Manage your craft saves with tags, and search with keyword.
 
 - Mod compatibility
 - Add search box
-- Intercept minor windows
+- Fix merge problem
 
 ### Future Plans
 
