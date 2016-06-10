@@ -36,6 +36,8 @@ namespace KSPMod
                 if (data[tag].Count == 0)
                 {
                     data.Remove(tag);
+                    if(selectedTag.ContainsKey(tag))
+                        selectedTag.Remove(tag);
                 }
             }
             allShipList.Remove(ship);
@@ -59,6 +61,9 @@ namespace KSPMod
             IEnumerable<KeyValuePair<string, Ship>> ret = data[selectedTag.Keys[0]];
             foreach (string tag in selectedTag.Keys)
             {
+                if (data.ContainsKey(tag) == false)
+                    Debug.Log(tag);
+                else
                 ret = ret.Intersect(data[tag]);
             }
             return ret;

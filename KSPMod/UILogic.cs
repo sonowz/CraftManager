@@ -38,7 +38,9 @@ namespace KSPMod
                 return false;
             if (System.IO.File.Exists(selectedShip.file.FullName) == false)
                 return false;
+            shipData.remove(selectedShip);
             System.IO.File.Delete(selectedShip.file.FullName);
+            selectedShip = null;
             return true;
         }
 

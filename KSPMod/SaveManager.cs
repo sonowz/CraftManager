@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,21 +16,17 @@ namespace KSPMod
     {
         private ShipData shipData;
         private SMUI UI;
+        private bool needsFileReload = false;
 
         public void Start()
         {
             //GameEvents.onEditorShipModified.Add(OnShipModified);
-            try
-            {
-                FetchShipFiles();
-            }
-            catch (Exception e)
-            {
-                print(e.StackTrace);
-            }
+
+            FetchShipFiles();
             UILogic.SaveManagerClass = this;
             EditorLogic.fetch.loadBtn.onClick.AddListener(onLoadBtn);
             EditorLogic.fetch.saveBtn.onClick.AddListener(onSaveBtn);
+            onUIDestroy();  // Initialize UI components
 
             /*CraftBrowserDialogHandler i= new CraftBrowserDialogHandler();
             print(i.GetHashCode());
@@ -66,9 +63,11 @@ namespace KSPMod
             s.tags = ExtractTags(config);
             s.tags.Add("_All");
             if (s.type == "SPH")
-                if(!s.tags.Contains("_SPH"))
-                        s.tags.Add("_SPH");
-            else if(!s.tags.Contains("_VAB"))
+            {
+                if (!s.tags.Contains("_SPH"))
+                    s.tags.Add("_SPH");
+            }
+            else if (!s.tags.Contains("_VAB"))
                 s.tags.Add("_VAB");
             s.name = config.GetValue("ship");
             s.file = f;
@@ -112,20 +111,16 @@ namespace KSPMod
             return thumbnail;
         }
 
-        private MessageBox[] m;
+        private bool newUnsavedWindow = true;
+        GameObject unsavedWindow = null;
         public void Update()
         {
             // Since UILogic is static class, there's no update() in it
-            if(UILogic.originalBrowser == null)
+            if (UILogic.originalBrowser == null)
                 UILogic.originalBrowser = (KSP.UI.Screens.CraftBrowserDialog)GameObject.FindObjectOfType(typeof(KSP.UI.Screens.CraftBrowserDialog));
             if (UILogic.originalBrowser != null)
             {
-                if (UI == null)
-                {
-                    Destroy(UILogic.originalBrowser);
-                    UILogic.originalBrowser = null;
-                }
-                else
+                if(UI != null)
                 {
                     if (UILogic.enableOriginal == true)
                         UILogic.originalBrowser.gameObject.transform.localScale = Vector3.one;
@@ -133,16 +128,80 @@ namespace KSPMod
                         UILogic.originalBrowser.gameObject.transform.localScale = Vector3.zero;
                 }
             }
-            foreach (Text t in GameObject.FindObjectsOfType<Text>())
-                if (t.text == "Load Craft")
-                    print("found");
-                
+
+            // Find window which fires when loadButton is clicked while current craft is unsaved
+            // There's no API that points the window, so just manually find it
+            /*unsavedWindow = GameObject.Find("Load Craft dialog handler");
+             if (unsavedWindow != null && newUnsavedWindow == true)
+             {
+                 newUnsavedWindow = false;
+                 if (UI != null)
+                     Destroy(UI);
+                 foreach (Button b in unsavedWindow.GetComponentsInChildren<Button>())
+                 {
+                     Text t = b.GetComponentInChildren<Text>();
+                     if (t != null)
+                     {
+                         if (t.text == "Save and Continue")
+                         {
+                             b.onClick.AddListener(onSaveBtn);
+                             b.onClick.AddListener(ResetAllAndLoad);
+                         }
+                         if (t.text == "Don't Save")
+                             b.onClick.AddListener(ResetAllAndLoad);
+                     }
+                 }
+             }
+             else if(unsavedWindow == null)
+                 newUnsavedWindow = true;*/
+
+            if (GameObject.Find("Delete File dialog handler") != null)
+                needsFileReload = true;
+
         }
 
+        public void ResetAllAndLoad()
+        {
+            if (UI != null)
+                Destroy(UI);
+            if (unsavedWindow != null)
+                Destroy(unsavedWindow);
+            foreach (KSP.UI.Screens.CraftBrowserDialog dialog in GameObject.FindObjectsOfType(typeof(KSP.UI.Screens.CraftBrowserDialog)))
+                dialog.OnBrowseCancelled();
+            /*foreach (Text t in GameObject.FindObjectsOfType<Text>())
+            {
+                
+                if (t.text == "Select a Craft to Load")
+                {
+                    print(t.transform.parent.gameObject.name);
+                    Destroy(t.transform.parent.gameObject);
+                }
+            }*/
+            EditorLogic.fetch.loadBtn.onClick.Invoke();
+        }
 
         public void onLoadBtn()
         {
-            UI = gameObject.AddComponent<SMUI>();
+            waitCount = 0;
+            StartCoroutine("waitOriginalDialog");     
+        }
+
+        private int waitCount = 0;
+        public IEnumerator waitOriginalDialog()
+        {
+            while (GameObject.Find("CraftBrowser(Clone)") == null)
+            {
+                if (waitCount < 30)
+                    waitCount++;
+                else
+                    needsFileReload = true; // Case when 'unsaved craft dialog' appears
+                yield return null;
+            }
+            if(needsFileReload)
+                FetchShipFiles();
+            needsFileReload = false;
+            if(UI == null)
+                UI = gameObject.AddComponent<SMUI>();
         }
 
         //private ConfigNode currentShip = null;
@@ -163,6 +222,13 @@ namespace KSPMod
         public void onUIDestroy()
         {
             UI = null;
+            foreach (KSP.UI.Screens.CraftBrowserDialog dialog in GameObject.FindObjectsOfType(typeof(KSP.UI.Screens.CraftBrowserDialog)))
+                dialog.OnBrowseCancelled();
+            foreach (GameObject go in GameObject.FindObjectsOfType<GameObject>())
+            {
+                if (go.name == "CraftBrowser(Clone)")
+                    Destroy(go);
+            }
         }
 
         //EditorLogic.fetch.loadBtn

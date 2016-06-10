@@ -113,7 +113,10 @@ namespace KSPMod
             {
                 GUI.Label(new Rect(90, 460, 120, 30), "Are you sure?");
                 if (GUI.Button(new Rect(180, 460, 30, 30), "<color=#FF0000>Y</color>", g_button))
+                {
                     UILogic.DeleteSelectedShip();
+                    deleteConfirm = false;
+                }
             }
             else
             {
@@ -133,7 +136,8 @@ namespace KSPMod
 
         private void destroy()
         {
-            UILogic.originalBrowser.OnBrowseCancelled();
+            if(UILogic.originalBrowser != null)
+                UILogic.originalBrowser.OnBrowseCancelled();
             UILogic.onDestroy();
             Destroy(this);
         }
