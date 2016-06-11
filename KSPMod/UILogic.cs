@@ -16,6 +16,7 @@ namespace KSPMod
         public static CraftBrowserDialog originalBrowser = null;
         public static bool enableOriginal = false;
         public static Ship selectedShip = null;
+        public static string queryText = "";
 
         // public void Update(); declared in SaveManager.cs
 
@@ -28,7 +29,12 @@ namespace KSPMod
             else if (EditorLogic.RootPart == null)
                 return false;
             else
-                ShipConstruction.LoadSubassembly(selectedShip.file.FullName);
+            {
+                //ShipConstruction.LoadSubassembly(selectedShip.file.FullName);
+                EditorLogic.fetch.SpawnTemplate(ShipConstruction.LoadTemplate(selectedShip.file.FullName));
+
+
+            }
             return true;
         }
 
@@ -79,13 +85,16 @@ namespace KSPMod
                 if (list != null)
                     foreach (KeyValuePair<string, Ship> pair in shipData.query())
                     {
-                        UI_CraftWindow m = new UI_CraftWindow();
-                        m.craft = pair.Value;
-                        if (m.craft == selectedShip)
-                            m.selected = true;
-                        else
-                            m.selected = false;
-                        ret.Add(m);
+                        if (queryText == null || queryText == "" || pair.Value.name.IndexOf(queryText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            UI_CraftWindow m = new UI_CraftWindow();
+                            m.craft = pair.Value;
+                            if (m.craft == selectedShip)
+                                m.selected = true;
+                            else
+                                m.selected = false;
+                            ret.Add(m);
+                        }
                     }
                 ListHasSelectedShip = false;
                 return ret;

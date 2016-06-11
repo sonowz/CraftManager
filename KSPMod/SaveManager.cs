@@ -21,13 +21,18 @@ namespace KSPMod
         public void Start()
         {
             //GameEvents.onEditorShipModified.Add(OnShipModified);
-
-            FetchShipFiles();
-            UILogic.SaveManagerClass = this;
-            EditorLogic.fetch.loadBtn.onClick.AddListener(onLoadBtn);
-            EditorLogic.fetch.saveBtn.onClick.AddListener(onSaveBtn);
-            onUIDestroy();  // Initialize UI components
-
+            try
+            {
+                FetchShipFiles();
+                UILogic.SaveManagerClass = this;
+                EditorLogic.fetch.loadBtn.onClick.AddListener(onLoadBtn);
+                EditorLogic.fetch.saveBtn.onClick.AddListener(onSaveBtn);
+                onUIDestroy();  // Initialize UI components
+            }
+            catch (Exception e)
+            {
+                print(e.StackTrace);
+            }
             /*CraftBrowserDialogHandler i= new CraftBrowserDialogHandler();
             print(i.GetHashCode());
             i = CraftBrowserDialogHandler._Spawn(EditorFacility.VAB, HighLogic.SaveFolder, i.OnFileSelected, i.OnBrowseCancelled, true);
@@ -89,11 +94,13 @@ namespace KSPMod
         private string getCraftDescription(Ship ship)
         {
             CraftEntry craft = CraftEntry.Create(ship.file, false, null);
+            string ret = "<color=#FFBC00><size=14><b>" + ship.name + "</b></size></color>";
+            if (craft.isValid == false)
+                ret += "<color=#FF0000> Contains invalid parts</color>";
             string desc = craft.partCount + " parts in " + craft.stageCount + " stages.";
             while (desc.Length < 35 - (int)Mathf.Log10(craft.partCount) - (int)Mathf.Log10(craft.stageCount))
                 desc += " ";
-            string ret = "<color=#FFBC00><size=14><b>" + ship.name + "</b></size></color>\n" +
-                         "<color=#C0C4B0>" + desc + "</color><color=#9EB757>Cost : " + craft.template.totalCost.ToString("0.00") + "</color>\n" +
+            ret += "\n<color=#C0C4B0>" + desc + "</color><color=#9EB757>Cost : " + craft.template.totalCost.ToString("0.00") + "</color>\n" +
                          "<color=#BD6428>";
             foreach (string tag in ship.tags)
                 if(tag != "_All" && tag != "_SPH" && tag != "_VAB")

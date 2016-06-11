@@ -22,6 +22,13 @@ namespace KSPMod
                 {
                     data.Add(tag, new SortedList<string, Ship>());
                 }
+                if (data[tag].ContainsKey(ship.name + ship.type))
+                {
+                    if (ship.file.FullName.Contains(EditorLogic.autoShipName))
+                        continue;
+                    else
+                        data[tag].Remove(ship.name + ship.type);
+                }
                 data[tag].Add(ship.name + ship.type, ship);
             }
             if (allShipList.Contains(ship) == false)
