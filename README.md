@@ -7,6 +7,7 @@ Manage your craft saves with tags, and search with keyword.
 
 - Possible incompability with translation mods that changes window text
 - Searchbox input bug after quite long period (maybe Unity bug?)
+- Bug: autosaved ship overwrites real entry(Filename)
 
 
 ### TODO :
