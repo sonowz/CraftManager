@@ -12,6 +12,7 @@ Manage your craft saves with tags, and search with keyword.
 ### TODO :
 
 - Mod compatibility
+- Add negative tag filter
 
 ### Future Plans
 
